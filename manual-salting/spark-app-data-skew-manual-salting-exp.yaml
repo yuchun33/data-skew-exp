@@ -1,0 +1,42 @@
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: data-skew-manual-salting-400
+  namespace: default
+spec:
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: "apache/spark-py:v3.4.0"
+  imagePullPolicy: IfNotPresent
+  mainApplicationFile: "s3a://spark-job/data-skew-manual-salting-read.py"
+  sparkVersion: "3.4.0"
+
+  sparkConf:
+    spark.jars.ivy: "/tmp/.ivy2" # 解決依賴下載目錄問題
+    spark.eventLog.enabled: "true"
+    spark.eventLog.dir: "s3a://shared/spark-logs"
+    "spark.hadoop.fs.s3a.endpoint": "http://minio-service:9000"
+    "spark.hadoop.fs.s3a.access.key": "minioadmin"
+    "spark.hadoop.fs.s3a.secret.key": "minioadmin"
+    "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    "spark.hadoop.fs.s3a.path.style.access": "true"
+    "spark.hadoop.fs.s3a.connection.ssl.enabled": "false"
+
+  deps:
+    packages:
+      - org.apache.hadoop:hadoop-aws:3.3.4
+
+  driver:
+    cores: 1
+    coreLimit: "1200m"
+    memory: "512m"
+    labels:
+      version: 3.4.0
+    serviceAccount: spark
+  executor:
+    cores: 1
+    instances: 3
+    memory: "5G"
+    labels:
+      version: 3.4.0

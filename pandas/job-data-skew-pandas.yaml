@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: data-skew-pandas-read
+spec:
+  template:
+    spec:
+      containers:
+        - name: data-skew-pandas-read
+          image: yuchun33/data-skew-pandas-read:latest
+          resources:
+            requests:
+              cpu: "1"
+              memory: "2G"
+            limits:
+              memory: "5G"
+      restartPolicy: Never
+  backoffLimit: 0 # 失敗了不要重試，因為記憶體不足重試也沒用
